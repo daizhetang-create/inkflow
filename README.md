@@ -1,98 +1,67 @@
-# vinext-starter
+# 墨流 Inkflow
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+> 为深度阅读留一片安静。
 
-## Prerequisites
+墨流是一款为长时间阅读设计的本地优先专注工具。它把一轮阅读拆成“准备阅读 → 安静专注 → 脑间歇 → 留下阅读痕迹”，用轻量计时、环境声和节律建议帮助你持续读下去，而不是把注意力变成另一张任务清单。
 
-- Node.js `>=22.13.0`
+## 现在可以做什么
 
-## Quick Start
+- 输入书名、章节或本轮阅读意图，选择阅读时长。
+- 在专注和脑间歇之间切换，支持暂停、继续和提前结束。
+- 自定义阅读时长、脑间歇时长和阅读目标。
+- 使用雨声、溪流、夜色或静音等声景；音量和主题可以在设置中调整。
+- 结束一轮后记录阅读分钟数、轮数和大致页数，查看最近七天的阅读形状。
+- 根据当天的阅读量和时间给出轻量建议，不强迫打卡。
+- 书名、阅读记录和偏好保存在当前设备浏览器中；无需登录，也可以离线使用。
+
+## 60 秒演示
+
+1. 打开应用，输入正在读的书名和这一轮想完成的章节。
+2. 选择 25、45、60 分钟或自定义时长，点击开始阅读。
+3. 专注中可以暂停或继续；打开“声景”时，环境声只做背景，不打断阅读。
+4. 完成后选择进入脑间歇，按提示远眺、呼吸，再回想刚读到的一句话。
+5. 填写本轮大约读了多少页，保存这条阅读痕迹。
+6. 回到首页查看今天累计分钟数、完成轮数和最近七天的阅读趋势。
+
+## 预览与本地运行
+
+当前仓库还没有公开在线演示地址。可以在本地运行真实应用：
 
 ```bash
 npm install
 npm run dev
+```
+
+然后打开终端显示的本地地址。生产构建和检查：
+
+```bash
 npm run build
+npm test
 ```
 
-This starter does not use `wrangler.jsonc`.
+项目包含一张当前界面预览图：[public/og.png](public/og.png)。
 
-## Included Shape
+## 数据与隐私
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+- 不需要账号，不上传书名、阅读记录或偏好。
+- 数据使用浏览器本地存储，换设备或清除浏览器数据后不会自动同步。
+- 环境声由浏览器本地生成，不依赖第三方音频服务。
+- 应用的目标是减少打扰；它不会把阅读过程变成连续通知。
 
-## Workspace Auth Headers
+## 技术结构
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+- React 19 + TypeScript
+- Next/Vinext 运行时与 Vite 构建链路
+- 本地浏览器存储保存设置和阅读记录
+- Web Audio API 生成环境声
+- `tests/rendered-html.test.mjs` 做构建后的页面检查
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+## 项目状态
 
-Treat the full name as optional and fall back to email when it is absent:
+当前版本是一个可以使用的专注阅读原型。下一步适合补充公开预览地址、首屏截图、键盘操作说明和更完整的测试说明，再考虑跨设备同步。
 
-```tsx
-import { headers } from "next/headers";
+## 项目链接
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- 仓库：[daizhetang-create/inkflow--](https://github.com/daizhetang-create/inkflow--)
+- 项目名：墨流 Inkflow
+- 产品方向：深度阅读、低打扰专注、本地优先
