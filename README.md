@@ -64,6 +64,6 @@ npm test
 
 ## 项目链接
 
-- 仓库：[daizhetang-create/inkflow--](https://github.com/daizhetang-create/inkflow--)
+- 仓库：[daizhetang-create/inkflow](https://github.com/daizhetang-create/inkflow)
 - 项目名：墨流 Inkflow
 - 产品方向：深度阅读、低打扰专注、本地优先
